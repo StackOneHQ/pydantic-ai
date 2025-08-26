@@ -47,6 +47,9 @@ def tool_from_stackone(
     # Get the specific tool
     stackone_tool = tools.get_tool(tool_name)
 
+    if stackone_tool is None:
+        raise ValueError(f"Tool '{tool_name}' not found in StackOne")
+
     # Extract JSON schema from the OpenAI function representation
     openai_function = stackone_tool.to_openai_function()
     json_schema: JsonSchemaValue = openai_function['function']['parameters']
