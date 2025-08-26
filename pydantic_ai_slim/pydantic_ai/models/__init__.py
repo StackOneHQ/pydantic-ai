@@ -111,6 +111,15 @@ KnownModelName = TypeAliasType(
         'bedrock:mistral.mixtral-8x7b-instruct-v0:1',
         'bedrock:mistral.mistral-large-2402-v1:0',
         'bedrock:mistral.mistral-large-2407-v1:0',
+        'cerebras:gpt-oss-120b',
+        'cerebras:llama3.1-8b',
+        'cerebras:llama-3.3-70b',
+        'cerebras:llama-4-scout-17b-16e-instruct',
+        'cerebras:llama-4-maverick-17b-128e-instruct',
+        'cerebras:qwen-3-235b-a22b-instruct-2507',
+        'cerebras:qwen-3-32b',
+        'cerebras:qwen-3-coder-480b',
+        'cerebras:qwen-3-235b-a22b-thinking-2507',
         'claude-3-5-haiku-20241022',
         'claude-3-5-haiku-latest',
         'claude-3-5-sonnet-20240620',
@@ -598,6 +607,7 @@ class StreamedResponse(ABC):
             model_name=self.model_name,
             timestamp=self.timestamp,
             usage=self.usage(),
+            provider_name=self.provider_name,
         )
 
     def usage(self) -> RequestUsage:
@@ -608,6 +618,12 @@ class StreamedResponse(ABC):
     @abstractmethod
     def model_name(self) -> str:
         """Get the model name of the response."""
+        raise NotImplementedError()
+
+    @property
+    @abstractmethod
+    def provider_name(self) -> str | None:
+        """Get the provider name."""
         raise NotImplementedError()
 
     @property
@@ -688,21 +704,23 @@ def infer_model(model: Model | KnownModelName | str) -> Model:  # noqa: C901
 
         return CohereModel(model_name, provider=provider)
     elif provider in (
-        'openai',
-        'deepseek',
         'azure',
-        'openrouter',
-        'vercel',
-        'grok',
-        'moonshotai',
+        'deepseek',
+        'cerebras',
         'fireworks',
-        'together',
-        'heroku',
         'github',
+        'grok',
+        'heroku',
+        'moonshotai',
+        'openai',
+        'openai-chat',
+        'openrouter',
+        'together',
+        'vercel',
     ):
-        from .openai import OpenAIModel
+        from .openai import OpenAIChatModel
 
-        return OpenAIModel(model_name, provider=provider)
+        return OpenAIChatModel(model_name, provider=provider)
     elif provider == 'openai-responses':
         from .openai import OpenAIResponsesModel
 
