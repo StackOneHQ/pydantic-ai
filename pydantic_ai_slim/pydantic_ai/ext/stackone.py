@@ -10,9 +10,8 @@ from pydantic_ai.tools import Tool
 from pydantic_ai.toolsets.function import FunctionToolset
 
 try:
-    from stackone_ai import StackOneToolSet
+    import stackone_ai
 except ImportError as _import_error:
-    # Friendly error when StackOne SDK is not installed
     raise ImportError('Please install `stackone-ai` to use StackOne tools.') from _import_error
 
 
@@ -35,7 +34,7 @@ def tool_from_stackone(
         A Pydantic AI tool that corresponds to the StackOne tool.
     """
     # Initialize StackOneToolSet
-    stackone_toolset = StackOneToolSet(
+    stackone_toolset = stackone_ai.StackOneToolSet(
         api_key=api_key,
         account_id=account_id,
         **({'base_url': base_url} if base_url else {}),
