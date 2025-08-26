@@ -660,7 +660,7 @@ agent = Agent('openai:gpt-4o', toolsets=[toolset])
 
 ### StackOne Tools {#stackone-tools}
 
-If you'd like to use tools from the [StackOne unified API platform](https://www.stackone.co/) with Pydantic AI, you can use the [`StackOneToolset`][pydantic_ai.ext.stackone.StackOneToolset] which supports glob patterns for tool selection. StackOne provides unified APIs for HRIS, ATS, CRM, and other business systems.
+If you'd like to use tools from the [StackOne unified API platform](https://www.stackone.co/) with Pydantic AI, you can use the [`StackOneToolset`][pydantic_ai.ext.stackone.StackOneToolset] which supports pattern matching for tool selection. StackOne provides unified APIs for HRIS, ATS, CRM, and other business systems.
 
 You will need to install the `stackone-ai` package, set your StackOne API key in the `STACKONE_API_KEY` environment variable, and provide your StackOne account ID via the `STACKONE_ACCOUNT_ID` environment variable or pass it directly to the toolset.
 
@@ -671,9 +671,15 @@ from pydantic_ai import Agent
 from pydantic_ai.ext.stackone import StackOneToolset
 
 
-# Use glob patterns to select specific tools
+# Use filter patterns to select specific tools
 toolset = StackOneToolset(
-    ['hris_*', '!hris_delete_*'],  # Include all HRIS tools except delete operations
+    filter_pattern='hris_*',  # Include all HRIS tools
+    account_id=os.getenv('STACKONE_ACCOUNT_ID'),
+)
+
+# Or specify exact tools
+specific_toolset = StackOneToolset(
+    tools=['hris_list_employees', 'hris_get_employee'],  # Specific tools only
     account_id=os.getenv('STACKONE_ACCOUNT_ID'),
 )
 

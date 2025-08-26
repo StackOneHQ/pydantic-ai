@@ -862,7 +862,7 @@ result = agent.run_sync('List all employees in the HR system')
 print(result.output)
 ```
 
-If you'd like to use multiple StackOne tools, you can use the [`StackOneToolset`][pydantic_ai.ext.stackone.StackOneToolset] [toolset](toolsets.md) which supports glob patterns for tool selection:
+If you'd like to use multiple StackOne tools, you can use the [`StackOneToolset`][pydantic_ai.ext.stackone.StackOneToolset] [toolset](toolsets.md) which supports pattern matching for tool selection:
 
 ```python {test="skip"}
 import os
@@ -872,7 +872,7 @@ from pydantic_ai.ext.stackone import StackOneToolset
 
 
 toolset = StackOneToolset(
-    ['hris_*', '!hris_delete_*'],  # Include all HRIS tools except delete operations
+    filter_pattern='hris_*',  # Include all HRIS tools
     account_id=os.getenv('STACKONE_ACCOUNT_ID'),
 )
 

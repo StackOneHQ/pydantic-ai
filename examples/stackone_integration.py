@@ -19,11 +19,10 @@ def single_tool_example():
     print(result.output)
 
 
-def toolset_example():
-    """Example using StackOne toolset with filters."""
+def toolset_with_filter_example():
+    """Example using StackOne toolset with filter pattern."""
     toolset = StackOneToolset(
-        include_tools=['hris_*'],
-        exclude_tools=['hris_delete_*'],
+        filter_pattern='hris_*',  # Get all HRIS tools
         account_id=os.getenv('STACKONE_ACCOUNT_ID'),
         api_key=os.getenv('STACKONE_API_KEY'),
     )
@@ -33,6 +32,20 @@ def toolset_example():
     print(result.output)
 
 
+def toolset_with_specific_tools_example():
+    """Example using StackOne toolset with specific tools."""
+    toolset = StackOneToolset(
+        tools=['hris_list_employees', 'hris_get_employee'],  # Specific tools only
+        account_id=os.getenv('STACKONE_ACCOUNT_ID'),
+        api_key=os.getenv('STACKONE_API_KEY'),
+    )
+
+    agent = Agent('openai:gpt-4o-mini', toolsets=[toolset])
+    result = agent.run_sync('Get information about all employees')
+    print(result.output)
+
+
 if __name__ == '__main__':
     single_tool_example()
-    toolset_example()
+    toolset_with_filter_example()
+    toolset_with_specific_tools_example()

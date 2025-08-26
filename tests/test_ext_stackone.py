@@ -207,10 +207,10 @@ class TestStackOneToolset:
 
     @patch('pydantic_ai.ext.stackone.tool_from_stackone')
     @patch('stackone_ai.StackOneToolSet')
-    def test_toolset_with_filters(
+    def test_toolset_with_filter_pattern(
         self, mock_stackone_toolset_class: MagicMock, mock_tool_from_stackone: MagicMock
     ) -> None:
-        """Test creating a StackOneToolset with include/exclude filters."""
+        """Test creating a StackOneToolset with filter_pattern."""
         from pydantic_ai.ext.stackone import StackOneToolset
 
         # Mock the StackOneToolSet to return tool names
@@ -227,15 +227,84 @@ class TestStackOneToolset:
         mock_tool.max_retries = None
         mock_tool_from_stackone.return_value = mock_tool
 
-        # Create toolset with filters
-        toolset = StackOneToolset(
-            include_tools=['hris_*'], exclude_tools=['*_deprecated'], account_id='test-account', api_key='test-key'
-        )
+        # Create toolset with filter_pattern
+        toolset = StackOneToolset(filter_pattern='hris_*', account_id='test-account', api_key='test-key')
 
-        # Verify StackOneToolSet was created with filters
-        mock_stackone_toolset_class.assert_called_once_with(
-            api_key='test-key', account_id='test-account', include_tools=['hris_*'], exclude_tools=['*_deprecated']
-        )
+        # Verify StackOneToolSet was created correctly
+        mock_stackone_toolset_class.assert_called_once_with(api_key='test-key', account_id='test-account')
+
+        # Verify get_tools was called with filter_pattern
+        mock_stackone_toolset.get_tools.assert_called_once_with('hris_*')
+
+        # Verify tools were created
+        assert isinstance(toolset, FunctionToolset)
+
+    @patch('pydantic_ai.ext.stackone.tool_from_stackone')
+    @patch('stackone_ai.StackOneToolSet')
+    def test_toolset_with_list_filter_pattern(
+        self, mock_stackone_toolset_class: MagicMock, mock_tool_from_stackone: MagicMock
+    ) -> None:
+        """Test creating a StackOneToolset with list filter_pattern."""
+        from pydantic_ai.ext.stackone import StackOneToolset
+
+        # Mock the StackOneToolSet to return tool names
+        mock_tool1 = Mock()
+        mock_tool1.name = 'hris_list_employees'
+        mock_tool2 = Mock()
+        mock_tool2.name = 'ats_get_job'
+
+        mock_stackone_toolset = Mock()
+        mock_stackone_toolset.get_tools.return_value = [mock_tool1, mock_tool2]
+        mock_stackone_toolset_class.return_value = mock_stackone_toolset
+
+        # Mock tool_from_stackone to return different tools for each call
+        def mock_tool_side_effect(tool_name: str, **kwargs: object) -> Mock:
+            mock_tool = Mock(spec=Tool)
+            mock_tool.name = tool_name
+            mock_tool.max_retries = None
+            return mock_tool
+
+        mock_tool_from_stackone.side_effect = mock_tool_side_effect
+
+        # Create toolset with list filter_pattern
+        toolset = StackOneToolset(filter_pattern=['hris_*', 'ats_*'], account_id='test-account', api_key='test-key')
+
+        # Verify get_tools was called with list filter_pattern
+        mock_stackone_toolset.get_tools.assert_called_once_with(['hris_*', 'ats_*'])
+
+        # Verify tools were created for both returned tools
+        assert mock_tool_from_stackone.call_count == 2
+
+        # Verify it's a FunctionToolset
+        assert isinstance(toolset, FunctionToolset)
+
+    @patch('pydantic_ai.ext.stackone.tool_from_stackone')
+    @patch('stackone_ai.StackOneToolSet')
+    def test_toolset_without_filter_pattern(
+        self, mock_stackone_toolset_class: MagicMock, mock_tool_from_stackone: MagicMock
+    ) -> None:
+        """Test creating a StackOneToolset without filter_pattern (gets all tools)."""
+        from pydantic_ai.ext.stackone import StackOneToolset
+
+        # Mock the StackOneToolSet to return all tools
+        mock_tool = Mock()
+        mock_tool.name = 'all_tools'
+
+        mock_stackone_toolset = Mock()
+        mock_stackone_toolset.get_tools.return_value = [mock_tool]
+        mock_stackone_toolset_class.return_value = mock_stackone_toolset
+
+        # Mock tool_from_stackone
+        mock_pydantic_tool = Mock(spec=Tool)
+        mock_pydantic_tool.name = 'all_tools'
+        mock_pydantic_tool.max_retries = None
+        mock_tool_from_stackone.return_value = mock_pydantic_tool
+
+        # Create toolset without filter_pattern
+        toolset = StackOneToolset(account_id='test-account', api_key='test-key')
+
+        # Verify get_tools was called with None (no filter)
+        mock_stackone_toolset.get_tools.assert_called_once_with(None)
 
         # Verify tools were created
         assert isinstance(toolset, FunctionToolset)
@@ -270,4 +339,79 @@ class TestStackOneToolset:
             base_url='https://custom.api.stackone.com',
         )
 
+        # Verify it's a FunctionToolset
         assert isinstance(toolset, FunctionToolset)
+
+
+@pytest.mark.skipif(not stackone_installed, reason='stackone-ai not installed')
+class TestToolFromStackOneAdditional:
+    """Additional tests for tool_from_stackone function to improve coverage."""
+
+    @patch('stackone_ai.StackOneToolSet')
+    def test_tool_from_stackone_call_functionality(self, mock_stackone_toolset_class: MagicMock) -> None:
+        """Test that tool_from_stackone creates a callable tool."""
+        from pydantic_ai.ext.stackone import tool_from_stackone
+
+        # Mock the StackOne tool with a callable method
+        mock_stackone_tool = Mock()
+        mock_stackone_tool.name = 'test_tool'
+        mock_stackone_tool.description = 'Test tool description'
+        mock_stackone_tool.call.return_value = {'result': 'success'}
+        mock_stackone_tool.to_openai_function.return_value = {
+            'function': {
+                'name': 'test_tool',
+                'description': 'Test tool description',
+                'parameters': {'type': 'object', 'properties': {}},
+            }
+        }
+
+        # Mock the toolset and tools
+        mock_tools = Mock()
+        mock_tools.get_tool.return_value = mock_stackone_tool
+
+        mock_stackone_toolset = Mock()
+        mock_stackone_toolset.get_tools.return_value = mock_tools
+        mock_stackone_toolset_class.return_value = mock_stackone_toolset
+
+        # Create the tool
+        pydantic_tool = tool_from_stackone('test_tool', api_key='test-key', account_id='test-account')
+
+        # Verify it's a proper Tool instance
+        from pydantic_ai.tools import Tool
+
+        assert isinstance(pydantic_tool, Tool)
+        assert pydantic_tool.name == 'test_tool'
+
+    @patch('stackone_ai.StackOneToolSet')
+    def test_tool_from_stackone_with_all_parameters(self, mock_stackone_toolset_class: MagicMock) -> None:
+        """Test tool_from_stackone with all optional parameters."""
+        from pydantic_ai.ext.stackone import tool_from_stackone
+
+        # Mock the StackOne tool
+        mock_stackone_tool = Mock()
+        mock_stackone_tool.name = 'test_tool'
+        mock_stackone_tool.description = 'Test tool description'
+        mock_stackone_tool.to_openai_function.return_value = {
+            'function': {'name': 'test_tool', 'parameters': {'type': 'object'}}
+        }
+
+        # Mock the toolset and tools
+        mock_tools = Mock()
+        mock_tools.get_tool.return_value = mock_stackone_tool
+
+        mock_stackone_toolset = Mock()
+        mock_stackone_toolset.get_tools.return_value = mock_tools
+        mock_stackone_toolset_class.return_value = mock_stackone_toolset
+
+        # Create tool with all parameters
+        tool_from_stackone(
+            'test_tool', api_key='test-key', account_id='test-account', base_url='https://custom.stackone.com'
+        )
+
+        # Verify StackOneToolSet was created with all parameters
+        mock_stackone_toolset_class.assert_called_once_with(
+            api_key='test-key', account_id='test-account', base_url='https://custom.stackone.com'
+        )
+
+        # Verify get_tools was called with the tool name
+        mock_stackone_toolset.get_tools.assert_called_once_with(['test_tool'])

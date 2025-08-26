@@ -69,30 +69,21 @@ class StackOneToolset(FunctionToolset):
         account_id: str | None = None,
         api_key: str | None = None,
         base_url: str | None = None,
-        include_tools: list[str] | None = None,
-        exclude_tools: list[str] | None = None,
+        filter_pattern: str | list[str] | None = None,
         id: str | None = None,
     ):
-        # when tools is specified, use it; otherwise, use filtering features
+        # when tools is specified, use it; otherwise, use filter_pattern
         if tools is not None:
             tool_names = list(tools)
         else:
-            # Fetch all available tools and apply filtering manually
+            # Use StackOne's native filtering with filter_pattern
             temp_toolset = stackone_ai.StackOneToolSet(
                 api_key=api_key,
                 account_id=account_id,
                 **({'base_url': base_url} if base_url else {}),
             )
-            all_tools = temp_toolset.get_tools()
-            tool_names = [tool.name for tool in all_tools]
-
-            # Apply include_tools filter if specified
-            if include_tools is not None:
-                tool_names = [name for name in tool_names if name in include_tools]
-
-            # Apply exclude_tools filter if specified
-            if exclude_tools is not None:
-                tool_names = [name for name in tool_names if name not in exclude_tools]
+            filtered_tools = temp_toolset.get_tools(filter_pattern)
+            tool_names = [tool.name for tool in filtered_tools]
 
         super().__init__(
             [
