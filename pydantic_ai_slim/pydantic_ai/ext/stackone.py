@@ -1,8 +1,6 @@
 from __future__ import annotations
 
-import os
 import json
-from typing import Annotated, Any, TypeAlias, cast
 from collections.abc import Sequence
 from typing import Any
 
@@ -49,8 +47,9 @@ def tool_from_stackone(
     # Get the specific tool
     stackone_tool = tools.get_tool(tool_name)
 
-    # define schema
-    json_schema: JsonSchemaValue = {'type': 'object', 'properties': {}, 'additionalProperties': True, 'required': []}
+    # Extract JSON schema from the OpenAI function representation
+    openai_function = stackone_tool.to_openai_function()
+    json_schema: JsonSchemaValue = openai_function['function']['parameters']
 
     return Tool.from_schema(
         # return json_schema
