@@ -56,8 +56,8 @@ def tool_from_stackone(
     return Tool.from_schema(
         # return json_schema
         function=lambda *args, **kwargs: stackone_tool.call(*args, **kwargs),
-        name=tool_name,
-        description=f'StackOne tool: {tool_name}',
+        name=stackone_tool.name,
+        description=stackone_tool.description,
         json_schema=json_schema,
     )
 
