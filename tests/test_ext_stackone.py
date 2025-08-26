@@ -1,6 +1,8 @@
 """Tests for StackOne integration with Pydantic AI."""
 
-import os
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 from unittest.mock import Mock, patch
 
 import pytest
@@ -8,8 +10,11 @@ import pytest
 from pydantic_ai.tools import Tool
 from pydantic_ai.toolsets.function import FunctionToolset
 
+if TYPE_CHECKING:
+    from unittest.mock import MagicMock
+
 try:
-    import stackone_ai  # noqa: F401
+    import stackone_ai  # noqa: F401  # pyright: ignore[reportUnusedImport]
 except ImportError:  # pragma: lax no cover
     stackone_installed = False
 else:
@@ -37,7 +42,7 @@ class TestToolFromStackOne:
     """Test the tool_from_stackone function."""
 
     @patch('stackone_ai.StackOneToolSet')
-    def test_tool_creation(self, mock_stackone_toolset_class):
+    def test_tool_creation(self, mock_stackone_toolset_class: MagicMock) -> None:
         """Test creating a single tool from StackOne."""
         from pydantic_ai.ext.stackone import tool_from_stackone
 
@@ -53,11 +58,9 @@ class TestToolFromStackOne:
                 'description': 'List all employees',
                 'parameters': {
                     'type': 'object',
-                    'properties': {
-                        'limit': {'type': 'integer', 'description': 'Limit the number of results'}
-                    }
-                }
-            }
+                    'properties': {'limit': {'type': 'integer', 'description': 'Limit the number of results'}},
+                },
+            },
         }
 
         mock_tools = Mock()
@@ -76,10 +79,7 @@ class TestToolFromStackOne:
         assert tool.description == 'List all employees'
 
         # Verify StackOneToolSet was called with correct parameters
-        mock_stackone_toolset_class.assert_called_once_with(
-            api_key='test-key',
-            account_id='test-account'
-        )
+        mock_stackone_toolset_class.assert_called_once_with(api_key='test-key', account_id='test-account')
 
         # Verify the tool was retrieved correctly
         mock_stackone_toolset.get_tools.assert_called_once_with(['hris_list_employees'])
@@ -89,7 +89,7 @@ class TestToolFromStackOne:
         assert tool.function_schema.json_schema == expected
 
     @patch('stackone_ai.StackOneToolSet')
-    def test_tool_not_found(self, mock_stackone_toolset_class):
+    def test_tool_not_found(self, mock_stackone_toolset_class: MagicMock) -> None:
         """Test error when tool is not found."""
         from pydantic_ai.ext.stackone import tool_from_stackone
 
@@ -106,7 +106,7 @@ class TestToolFromStackOne:
             tool_from_stackone('unknown_tool', api_key='test-key')
 
     @patch('stackone_ai.StackOneToolSet')
-    def test_tool_with_base_url(self, mock_stackone_toolset_class):
+    def test_tool_with_base_url(self, mock_stackone_toolset_class: MagicMock) -> None:
         """Test creating a tool with custom base URL."""
         from pydantic_ai.ext.stackone import tool_from_stackone
 
@@ -119,8 +119,8 @@ class TestToolFromStackOne:
             'function': {
                 'name': 'hris_list_employees',
                 'description': 'List all employees',
-                'parameters': {'type': 'object', 'properties': {}}
-            }
+                'parameters': {'type': 'object', 'properties': {}},
+            },
         }
 
         mock_tools = Mock()
@@ -131,23 +131,17 @@ class TestToolFromStackOne:
         mock_stackone_toolset_class.return_value = mock_stackone_toolset
 
         # Create tool with base URL and verify json_schema conversion
-        tool = tool_from_stackone(
-            'hris_list_employees',
-            api_key='test-key',
-            base_url='https://custom.api.stackone.com'
-        )
+        tool = tool_from_stackone('hris_list_employees', api_key='test-key', base_url='https://custom.api.stackone.com')
         # Verify base URL was passed to StackOneToolSet
         mock_stackone_toolset_class.assert_called_once_with(
-            api_key='test-key',
-            account_id=None,
-            base_url='https://custom.api.stackone.com'
+            api_key='test-key', account_id=None, base_url='https://custom.api.stackone.com'
         )
         # Verify returned Tool has correct schema
         expected = mock_tool.to_openai_function()['function']['parameters']
         assert tool.function_schema.json_schema == expected
 
     @patch('stackone_ai.StackOneToolSet')
-    def test_default_parameters(self, mock_stackone_toolset_class):
+    def test_default_parameters(self, mock_stackone_toolset_class: MagicMock) -> None:
         """Test default account_id and base_url are None when not provided."""
         from pydantic_ai.ext.stackone import tool_from_stackone
 
@@ -156,7 +150,7 @@ class TestToolFromStackOne:
         mock_tool.description = 'bar'
         mock_tool.to_openai_function.return_value = {
             'type': 'function',
-            'function': {'name': 'foo', 'description': 'bar', 'parameters': {}}
+            'function': {'name': 'foo', 'description': 'bar', 'parameters': {}},
         }
         mock_tools = Mock()
         mock_tools.get_tool.return_value = mock_tool
@@ -176,24 +170,27 @@ class TestStackOneToolset:
 
     @patch('pydantic_ai.ext.stackone.tool_from_stackone')
     @patch('stackone_ai.StackOneToolSet')
-    def test_toolset_with_specific_tools(self, mock_stackone_toolset_class, mock_tool_from_stackone):
+    def test_toolset_with_specific_tools(
+        self, mock_stackone_toolset_class: MagicMock, mock_tool_from_stackone: MagicMock
+    ) -> None:
         """Test creating a StackOneToolset with specific tools."""
         from pydantic_ai.ext.stackone import StackOneToolset
 
         # Mock tool_from_stackone to return different mock tools
-        def create_mock_tool(tool_name):
+        def create_mock_tool(tool_name: str) -> Mock:
             mock_tool = Mock(spec=Tool)
             mock_tool.name = tool_name
             mock_tool.max_retries = None
             return mock_tool
-        
-        mock_tool_from_stackone.side_effect = lambda name, **kwargs: create_mock_tool(name)
+
+        def side_effect_func(name: str, **kwargs: object) -> Mock:
+            return create_mock_tool(name)
+
+        mock_tool_from_stackone.side_effect = side_effect_func
 
         # Create the toolset with specific tools
         toolset = StackOneToolset(
-            tools=['hris_list_employees', 'hris_get_employee'],
-            account_id='test-account',
-            api_key='test-key'
+            tools=['hris_list_employees', 'hris_get_employee'], account_id='test-account', api_key='test-key'
         )
 
         # Verify it's a FunctionToolset
@@ -202,28 +199,24 @@ class TestStackOneToolset:
         # Verify tool_from_stackone was called for each tool
         assert mock_tool_from_stackone.call_count == 2
         mock_tool_from_stackone.assert_any_call(
-            'hris_list_employees',
-            account_id='test-account',
-            api_key='test-key',
-            base_url=None
+            'hris_list_employees', account_id='test-account', api_key='test-key', base_url=None
         )
         mock_tool_from_stackone.assert_any_call(
-            'hris_get_employee',
-            account_id='test-account',
-            api_key='test-key',
-            base_url=None
+            'hris_get_employee', account_id='test-account', api_key='test-key', base_url=None
         )
 
     @patch('pydantic_ai.ext.stackone.tool_from_stackone')
     @patch('stackone_ai.StackOneToolSet')
-    def test_toolset_with_filters(self, mock_stackone_toolset_class, mock_tool_from_stackone):
+    def test_toolset_with_filters(
+        self, mock_stackone_toolset_class: MagicMock, mock_tool_from_stackone: MagicMock
+    ) -> None:
         """Test creating a StackOneToolset with include/exclude filters."""
         from pydantic_ai.ext.stackone import StackOneToolset
 
         # Mock the StackOneToolSet to return tool names
         mock_tool_obj = Mock()
         mock_tool_obj.name = 'hris_list_employees'
-        
+
         mock_stackone_toolset = Mock()
         mock_stackone_toolset.get_tools.return_value = [mock_tool_obj]
         mock_stackone_toolset_class.return_value = mock_stackone_toolset
@@ -236,18 +229,12 @@ class TestStackOneToolset:
 
         # Create toolset with filters
         toolset = StackOneToolset(
-            include_tools=['hris_*'],
-            exclude_tools=['*_deprecated'],
-            account_id='test-account',
-            api_key='test-key'
+            include_tools=['hris_*'], exclude_tools=['*_deprecated'], account_id='test-account', api_key='test-key'
         )
 
         # Verify StackOneToolSet was created with filters
         mock_stackone_toolset_class.assert_called_once_with(
-            api_key='test-key',
-            account_id='test-account',
-            include_tools=['hris_*'],
-            exclude_tools=['*_deprecated']
+            api_key='test-key', account_id='test-account', include_tools=['hris_*'], exclude_tools=['*_deprecated']
         )
 
         # Verify tools were created
@@ -255,7 +242,9 @@ class TestStackOneToolset:
 
     @patch('pydantic_ai.ext.stackone.tool_from_stackone')
     @patch('stackone_ai.StackOneToolSet')
-    def test_toolset_with_base_url(self, mock_stackone_toolset_class, mock_tool_from_stackone):
+    def test_toolset_with_base_url(
+        self, mock_stackone_toolset_class: MagicMock, mock_tool_from_stackone: MagicMock
+    ) -> None:
         """Test creating a StackOneToolset with custom base URL."""
         from pydantic_ai.ext.stackone import StackOneToolset
 
@@ -270,7 +259,7 @@ class TestStackOneToolset:
             tools=['hris_list_employees'],
             account_id='test-account',
             api_key='test-key',
-            base_url='https://custom.api.stackone.com'
+            base_url='https://custom.api.stackone.com',
         )
 
         # Verify tool_from_stackone was called with base URL
@@ -278,7 +267,7 @@ class TestStackOneToolset:
             'hris_list_employees',
             account_id='test-account',
             api_key='test-key',
-            base_url='https://custom.api.stackone.com'
+            base_url='https://custom.api.stackone.com',
         )
 
         assert isinstance(toolset, FunctionToolset)

@@ -1,8 +1,6 @@
 from __future__ import annotations
 
-import json
 from collections.abc import Sequence
-from typing import Any
 
 from pydantic.json_schema import JsonSchemaValue
 
@@ -54,7 +52,6 @@ def tool_from_stackone(
     json_schema: JsonSchemaValue = openai_function['function']['parameters']
 
     return Tool.from_schema(
-        # return json_schema
         function=lambda *args, **kwargs: stackone_tool.call(*args, **kwargs),
         name=stackone_tool.name,
         description=stackone_tool.description,
@@ -80,15 +77,22 @@ class StackOneToolset(FunctionToolset):
         if tools is not None:
             tool_names = list(tools)
         else:
-            # Fetch all available tools without filtering
+            # Fetch all available tools and apply filtering manually
             temp_toolset = stackone_ai.StackOneToolSet(
                 api_key=api_key,
                 account_id=account_id,
-                include_tools=include_tools,
-                exclude_tools=exclude_tools,
                 **({'base_url': base_url} if base_url else {}),
             )
-            tool_names = [tool.name for tool in temp_toolset.get_tools()]
+            all_tools = temp_toolset.get_tools()
+            tool_names = [tool.name for tool in all_tools]
+
+            # Apply include_tools filter if specified
+            if include_tools is not None:
+                tool_names = [name for name in tool_names if name in include_tools]
+
+            # Apply exclude_tools filter if specified
+            if exclude_tools is not None:
+                tool_names = [name for name in tool_names if name not in exclude_tools]
 
         super().__init__(
             [
