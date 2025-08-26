@@ -84,6 +84,9 @@ class TestToolFromStackOne:
         # Verify the tool was retrieved correctly
         mock_stackone_toolset.get_tools.assert_called_once_with(['hris_list_employees'])
         mock_tools.get_tool.assert_called_once_with('hris_list_employees')
+        # Verify returned Tool has correct JSON schema based on StackOne definition
+        expected = mock_tool.to_openai_function()['function']['parameters']
+        assert tool.function_schema.json_schema == expected
 
     @patch('stackone_ai.StackOneToolSet')
     def test_tool_not_found(self, mock_stackone_toolset_class):
@@ -127,19 +130,44 @@ class TestToolFromStackOne:
         mock_stackone_toolset.get_tools.return_value = mock_tools
         mock_stackone_toolset_class.return_value = mock_stackone_toolset
 
-        # Create tool with base URL
-        tool_from_stackone(
+        # Create tool with base URL and verify json_schema conversion
+        tool = tool_from_stackone(
             'hris_list_employees',
             api_key='test-key',
             base_url='https://custom.api.stackone.com'
         )
-
-        # Verify base URL was passed
+        # Verify base URL was passed to StackOneToolSet
         mock_stackone_toolset_class.assert_called_once_with(
             api_key='test-key',
             account_id=None,
             base_url='https://custom.api.stackone.com'
         )
+        # Verify returned Tool has correct schema
+        expected = mock_tool.to_openai_function()['function']['parameters']
+        assert tool.function_schema.json_schema == expected
+
+    @patch('stackone_ai.StackOneToolSet')
+    def test_default_parameters(self, mock_stackone_toolset_class):
+        """Test default account_id and base_url are None when not provided."""
+        from pydantic_ai.ext.stackone import tool_from_stackone
+
+        mock_tool = Mock()
+        mock_tool.name = 'foo'
+        mock_tool.description = 'bar'
+        mock_tool.to_openai_function.return_value = {
+            'type': 'function',
+            'function': {'name': 'foo', 'description': 'bar', 'parameters': {}}
+        }
+        mock_tools = Mock()
+        mock_tools.get_tool.return_value = mock_tool
+        mock_stackone_toolset = Mock()
+        mock_stackone_toolset.get_tools.return_value = mock_tools
+        mock_stackone_toolset_class.return_value = mock_stackone_toolset
+
+        tool = tool_from_stackone('foo', api_key='key-only')
+        mock_stackone_toolset_class.assert_called_once_with(api_key='key-only', account_id=None)
+        expected = mock_tool.to_openai_function()['function']['parameters']
+        assert tool.function_schema.json_schema == expected
 
 
 @pytest.mark.skipif(not stackone_installed, reason='stackone-ai not installed')
