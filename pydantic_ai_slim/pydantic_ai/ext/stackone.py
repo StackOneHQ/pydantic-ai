@@ -60,3 +60,45 @@ def tool_from_stackone(
         description=f'StackOne tool: {tool_name}',
         json_schema=json_schema,
     )
+
+
+class StackOneToolset(FunctionToolset):
+    """A toolset that wraps StackOne tools."""
+
+    def __init__(
+        self,
+        tools: Sequence[str] | None = None,
+        *,
+        account_id: str | None = None,
+        api_key: str | None = None,
+        base_url: str | None = None,
+        include_tools: list[str] | None = None,
+        exclude_tools: list[str] | None = None,
+        id: str | None = None,
+    ):
+        # when tools is specified, use it; otherwise, use filtering features
+        if tools is not None:
+            tool_names = list(tools)
+        else:
+            # Fetch all available tools without filtering
+            temp_toolset = stackone_ai.StackOneToolSet(
+                api_key=api_key,
+                account_id=account_id,
+                include_tools=include_tools,
+                exclude_tools=exclude_tools,
+                **({'base_url': base_url} if base_url else {}),
+            )
+            tool_names = [tool.name for tool in temp_toolset.get_tools()]
+
+        super().__init__(
+            [
+                tool_from_stackone(
+                    tool_name,
+                    account_id=account_id,
+                    api_key=api_key,
+                    base_url=base_url,
+                )
+                for tool_name in tool_names
+            ],
+            id=id,
+        )
