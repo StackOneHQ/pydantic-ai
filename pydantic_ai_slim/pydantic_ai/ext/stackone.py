@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import json
 from collections.abc import Sequence
 from typing import Any
 
@@ -54,17 +55,14 @@ def tool_from_stackone(
     # We'll use the tool's call method and extract schema information
     def implementation(**kwargs: Any) -> str:
         """Execute the StackOne tool with provided arguments."""
-        try:
-            result = stackone_tool.call(**kwargs)
-            # Convert result to string if it's not already
-            if isinstance(result, str):
-                return result
-            # For complex objects, return JSON representation
-            import json
+        result = stackone_tool.call(**kwargs)
+        # Convert result to string if it's not already
+        if isinstance(result, str):
+            return result
 
-            return json.dumps(result, default=str)
-        except Exception as e:
-            return f'Error executing StackOne tool: {str(e)}'
+        # For complex objects, return JSON representation
+        # we need to convert json because the function must return a string
+        return json.dumps(result, default=str)
 
     # Create a basic JSON schema for the tool
     # In a real implementation, you'd want to extract this from the StackOne tool's schema
