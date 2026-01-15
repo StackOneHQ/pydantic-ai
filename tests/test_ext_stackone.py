@@ -89,6 +89,34 @@ class TestToolFromStackOne:
         assert tool.function_schema.json_schema == expected
 
     @patch('stackone_ai.StackOneToolSet')
+    def test_tool_creation_with_list(self, mock_stackone_toolset_class: MagicMock) -> None:
+        """Test creating a tool when get_tools returns a list."""
+        from pydantic_ai.ext.stackone import tool_from_stackone
+
+        mock_tool = Mock()
+        mock_tool.name = 'hris_list_employees'
+        mock_tool.description = 'List all employees'
+        mock_tool.call.return_value = {'employees': []}
+        mock_tool.to_openai_function.return_value = {
+            'type': 'function',
+            'function': {
+                'name': 'hris_list_employees',
+                'description': 'List all employees',
+                'parameters': {'type': 'object', 'properties': {}},
+            },
+        }
+
+        mock_stackone_toolset = Mock()
+        mock_stackone_toolset.get_tools.return_value = [mock_tool]
+        mock_stackone_toolset_class.return_value = mock_stackone_toolset
+
+        tool = tool_from_stackone('hris_list_employees', api_key='test-key')
+
+        assert tool.name == 'hris_list_employees'
+        assert tool.description == 'List all employees'
+        mock_stackone_toolset.get_tools.assert_called_once_with(['hris_list_employees'])
+
+    @patch('stackone_ai.StackOneToolSet')
     def test_tool_not_found(self, mock_stackone_toolset_class: MagicMock) -> None:
         """Test error when tool is not found."""
         from pydantic_ai.ext.stackone import tool_from_stackone

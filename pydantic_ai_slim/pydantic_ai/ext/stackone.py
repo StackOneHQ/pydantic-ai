@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
+from typing import Any
 
 from pydantic.json_schema import JsonSchemaValue
 
@@ -11,6 +12,21 @@ try:
     import stackone_ai
 except ImportError as _import_error:
     raise ImportError('Please install `stackone-ai` to use StackOne tools.') from _import_error
+
+
+def _select_stackone_tool(tools: object, tool_name: str) -> Any:
+    if hasattr(tools, 'get_tool'):
+        stackone_tool = tools.get_tool(tool_name)
+        if stackone_tool is not None:
+            return stackone_tool
+    try:
+        for tool in tools:
+            if getattr(tool, 'name', None) == tool_name:
+                return tool
+    except TypeError:
+        pass
+
+    raise ValueError(f"Tool '{tool_name}' not found in StackOne")
 
 
 def tool_from_stackone(
@@ -42,17 +58,17 @@ def tool_from_stackone(
     tools = stackone_toolset.get_tools([tool_name])
 
     # Get the specific tool
-    stackone_tool = tools.get_tool(tool_name)
-
-    if stackone_tool is None:
-        raise ValueError(f"Tool '{tool_name}' not found in StackOne")
+    stackone_tool = _select_stackone_tool(tools, tool_name)
 
     # Extract JSON schema from the OpenAI function representation
     openai_function = stackone_tool.to_openai_function()
     json_schema: JsonSchemaValue = openai_function['function']['parameters']
 
+    def implementation(**kwargs: Any) -> Any:
+        return stackone_tool.call(**kwargs)
+
     return Tool.from_schema(
-        function=lambda *args, **kwargs: stackone_tool.call(*args, **kwargs),
+        function=implementation,
         name=stackone_tool.name,
         description=stackone_tool.description,
         json_schema=json_schema,
