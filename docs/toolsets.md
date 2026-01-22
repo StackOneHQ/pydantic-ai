@@ -727,3 +727,36 @@ toolset = ACIToolset(
 
 agent = Agent('openai:gpt-5', toolsets=[toolset])
 ```
+
+### StackOne Tools {#stackone-tools}
+
+If you'd like to use tools from the [StackOne unified API platform](https://www.stackone.co/) with Pydantic AI, you can use the [`StackOneToolset`][pydantic_ai.ext.stackone.StackOneToolset] which supports pattern matching for tool selection. StackOne provides unified APIs for HRIS, ATS, CRM, and other business systems.
+
+You will need to install the `stackone-ai` package (requires Python 3.10+), set your StackOne API key in the `STACKONE_API_KEY` environment variable, and provide your StackOne account ID via the `STACKONE_ACCOUNT_ID` environment variable or pass it directly to the toolset.
+
+```python {test="skip"}
+import os
+
+from pydantic_ai import Agent
+from pydantic_ai.ext.stackone import StackOneToolset
+
+# Use filter patterns to select specific tools
+toolset = StackOneToolset(
+    filter_pattern='hris_*',  # Include all HRIS tools
+    account_id=os.getenv('STACKONE_ACCOUNT_ID'),
+    api_key=os.getenv('STACKONE_API_KEY'),
+)
+
+# Or specify exact tools
+specific_toolset = StackOneToolset(
+    tools=['hris_list_employees', 'hris_get_employee'],  # Specific tools only
+    account_id=os.getenv('STACKONE_ACCOUNT_ID'),
+    api_key=os.getenv('STACKONE_API_KEY'),
+)
+
+agent = Agent('openai:gpt-5', toolsets=[toolset])
+
+# Example usage
+result = agent.run_sync('List all employees and get information about the first employee')
+print(result.output)
+```
