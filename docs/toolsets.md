@@ -730,7 +730,7 @@ agent = Agent('openai:gpt-5', toolsets=[toolset])
 
 ### StackOne Tools {#stackone-tools}
 
-If you'd like to use tools from the [StackOne unified API platform](https://www.stackone.co/) with Pydantic AI, you can use the [`StackOneToolset`][pydantic_ai.ext.stackone.StackOneToolset] which supports pattern matching for tool selection. StackOne provides unified APIs for HRIS, ATS, CRM, and other business systems.
+If you'd like to use tools from [StackOne](https://www.stackone.com/) with Pydantic AI, you can use the [`StackOneToolset`][pydantic_ai.ext.stackone.StackOneToolset] which supports pattern matching for tool selection. StackOne is the AI Integration Gateway that connects AI agents to hundreds of SaaS integrations through a single unified interface.
 
 You will need to install the `stackone-ai` package (requires Python 3.10+), set your StackOne API key in the `STACKONE_API_KEY` environment variable, and provide your StackOne account ID via the `STACKONE_ACCOUNT_ID` environment variable or pass it directly to the toolset.
 
