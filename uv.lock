@@ -6375,7 +6375,7 @@ requires-dist = [
     { name = "requests", marker = "extra == 'vertexai'", specifier = ">=2.32.2" },
     { name = "rich", marker = "extra == 'cli'", specifier = ">=13" },
     { name = "sentence-transformers", marker = "extra == 'sentence-transformers'", specifier = ">=5.2.0" },
-    { name = "stackone-ai", marker = "extra == 'stackone'", specifier = ">=2.1.1" },
+    { name = "stackone-ai", marker = "extra == 'stackone'", specifier = ">=2.3.0" },
     { name = "starlette", marker = "extra == 'ag-ui'", specifier = ">=0.45.3" },
     { name = "starlette", marker = "extra == 'ui'", specifier = ">=0.45.3" },
     { name = "starlette", marker = "extra == 'web'", specifier = ">=0.45.3" },
@@ -8306,7 +8306,7 @@ wheels = [
 
 [[package]]
 name = "stackone-ai"
-version = "2.1.1"
+version = "2.3.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "bm25s" },
@@ -8316,9 +8316,9 @@ dependencies = [
     { name = "pydantic" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/0f/0c/a76539757074286f8fff3c98a84b02d985ca337e5634e17900cf800def98/stackone_ai-2.1.1.tar.gz", hash = "sha256:1595732ebea295058f87a9d2cd8b1abfbcff41f7cd16006cfd5337b1528f4f78", size = 537753, upload-time = "2026-01-22T10:49:03.264Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/36/06/cc058d329e44a73fa7aa25f03e42aa0ee15d5f22aca534f21f7eb8cf63a7/stackone_ai-2.3.1.tar.gz", hash = "sha256:d25b521ad6cee7f8107c9beef9a05a67bc39b07646d4ac4f4665fea1dbe3d601", size = 537863, upload-time = "2026-01-29T16:59:20.683Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/69/6c/0978c9687721a0545f0f81befb70ac2531170204acad10bb6ee058d235bf/stackone_ai-2.1.1-py3-none-any.whl", hash = "sha256:49023c39824e3c22a87838c4c46c65ec2256e205cd902207b42d9495ca612e71", size = 30833, upload-time = "2026-01-22T10:49:04.207Z" },
+    { url = "https://files.pythonhosted.org/packages/97/5a/31ef092360e9175e86909df86d1f889f5e7f80df04ceb3e855ed81fa563f/stackone_ai-2.3.1-py3-none-any.whl", hash = "sha256:bd6ffc937f894045d410353eaec456e1a40001dc6e9b28904bd770869061b60d", size = 30818, upload-time = "2026-01-29T16:59:19.7Z" },
 ]
 
 [[package]]
