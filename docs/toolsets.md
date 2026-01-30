@@ -736,7 +736,7 @@ agent = Agent('openai:gpt-5', toolsets=[toolset])
 
 ### StackOne Tools {#stackone-tools}
 
-If you'd like to use tools from [StackOne](https://www.stackone.com/) with Pydantic AI, you can use the [`StackOneToolset`][pydantic_ai.ext.stackone.StackOneToolset] which supports pattern matching for tool selection. StackOne is the AI Integration Gateway that connects AI agents to hundreds of SaaS integrations through a single unified interface.
+If you'd like to use tools from [StackOne](https://www.stackone.com/) with Pydantic AI, you can use the [`StackOneToolset`][pydantic_ai.ext.stackone.StackOneToolset] which supports pattern matching for tool selection. StackOne provides integration infrastructure for AI agents, enabling them to execute actions across 200+ enterprise applications.
 
 You will need to install the `stackone-ai` package (requires Python 3.10+), set your StackOne API key in the `STACKONE_API_KEY` environment variable, and provide your StackOne account ID via the `STACKONE_ACCOUNT_ID` environment variable or pass it directly to the toolset.
 
@@ -748,14 +748,14 @@ from pydantic_ai.ext.stackone import StackOneToolset
 
 # Use filter patterns to select specific tools
 toolset = StackOneToolset(
-    filter_pattern='hris_*',  # Include all HRIS tools
+    filter_pattern='stackone_*',  # Include all StackOne tools
     account_id=os.getenv('STACKONE_ACCOUNT_ID'),
     api_key=os.getenv('STACKONE_API_KEY'),
 )
 
 # Or specify exact tools
 specific_toolset = StackOneToolset(
-    tools=['hris_list_employees', 'hris_get_employee'],  # Specific tools only
+    tools=['stackone_list_employees', 'stackone_get_employee'],  # Specific tools only
     account_id=os.getenv('STACKONE_ACCOUNT_ID'),
     api_key=os.getenv('STACKONE_API_KEY'),
 )
