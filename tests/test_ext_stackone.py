@@ -189,29 +189,41 @@ class TestToolFromStackOne:
         assert tool.description == ''
 
 
+def _create_mock_stackone_tool(name: str, description: str = 'Test description') -> Mock:
+    """Helper to create a mock StackOne tool."""
+    mock_tool = Mock()
+    mock_tool.name = name
+    mock_tool.description = description
+    mock_tool.to_openai_function.return_value = {
+        'type': 'function',
+        'function': {
+            'name': name,
+            'description': description,
+            'parameters': {'type': 'object', 'properties': {}},
+        },
+    }
+    return mock_tool
+
+
 @pytest.mark.skipif(not stackone_installed, reason='stackone-ai not installed')
 class TestStackOneToolset:
     """Test the StackOneToolset class."""
 
-    @patch('pydantic_ai.ext.stackone.tool_from_stackone')
     @patch('pydantic_ai.ext.stackone.StackOneToolSet')
-    def test_toolset_with_specific_tools(
-        self, mock_stackone_toolset_class: MagicMock, mock_tool_from_stackone: MagicMock
-    ) -> None:
+    def test_toolset_with_specific_tools(self, mock_stackone_toolset_class: MagicMock) -> None:
         """Test creating a StackOneToolset with specific tools."""
         from pydantic_ai.ext.stackone import StackOneToolset
 
-        # Mock tool_from_stackone to return different mock tools
-        def create_mock_tool(tool_name: str) -> Mock:
-            mock_tool = Mock(spec=Tool)
-            mock_tool.name = tool_name
-            mock_tool.max_retries = None
-            return mock_tool
+        # Mock the tools returned by fetch_tools
+        mock_tool1 = _create_mock_stackone_tool('hris_list_employees')
+        mock_tool2 = _create_mock_stackone_tool('hris_get_employee')
 
-        def side_effect_func(name: str, **kwargs: object) -> Mock:
-            return create_mock_tool(name)
+        mock_fetched_tools = Mock()
+        mock_fetched_tools.__iter__ = Mock(return_value=iter([mock_tool1, mock_tool2]))
 
-        mock_tool_from_stackone.side_effect = side_effect_func
+        mock_stackone_toolset = Mock()
+        mock_stackone_toolset.fetch_tools.return_value = mock_fetched_tools
+        mock_stackone_toolset_class.return_value = mock_stackone_toolset
 
         # Create the toolset with specific tools
         toolset = StackOneToolset(
@@ -221,36 +233,26 @@ class TestStackOneToolset:
         # Verify it's a FunctionToolset
         assert isinstance(toolset, FunctionToolset)
 
-        # Verify tool_from_stackone was called for each tool
-        assert mock_tool_from_stackone.call_count == 2
-        mock_tool_from_stackone.assert_any_call(
-            'hris_list_employees', account_id='test-account', api_key='test-key', base_url=None
-        )
-        mock_tool_from_stackone.assert_any_call(
-            'hris_get_employee', account_id='test-account', api_key='test-key', base_url=None
-        )
+        # Verify StackOneToolSet was created correctly
+        mock_stackone_toolset_class.assert_called_once_with(api_key='test-key', account_id='test-account')
 
-    @patch('pydantic_ai.ext.stackone.tool_from_stackone')
+        # Verify fetch_tools was called with the tool names as actions
+        mock_stackone_toolset.fetch_tools.assert_called_once_with(actions=['hris_list_employees', 'hris_get_employee'])
+
     @patch('pydantic_ai.ext.stackone.StackOneToolSet')
-    def test_toolset_with_filter_pattern(
-        self, mock_stackone_toolset_class: MagicMock, mock_tool_from_stackone: MagicMock
-    ) -> None:
+    def test_toolset_with_filter_pattern(self, mock_stackone_toolset_class: MagicMock) -> None:
         """Test creating a StackOneToolset with filter_pattern."""
         from pydantic_ai.ext.stackone import StackOneToolset
 
-        # Mock the StackOneToolSet to return tool names
-        mock_tool_obj = Mock()
-        mock_tool_obj.name = 'hris_list_employees'
+        # Mock the tools returned by fetch_tools
+        mock_tool = _create_mock_stackone_tool('hris_list_employees')
+
+        mock_fetched_tools = Mock()
+        mock_fetched_tools.__iter__ = Mock(return_value=iter([mock_tool]))
 
         mock_stackone_toolset = Mock()
-        mock_stackone_toolset.fetch_tools.return_value = [mock_tool_obj]
+        mock_stackone_toolset.fetch_tools.return_value = mock_fetched_tools
         mock_stackone_toolset_class.return_value = mock_stackone_toolset
-
-        # Mock tool_from_stackone
-        mock_tool = Mock(spec=Tool)
-        mock_tool.name = 'hris_list_employees'
-        mock_tool.max_retries = None
-        mock_tool_from_stackone.return_value = mock_tool
 
         # Create toolset with filter_pattern
         toolset = StackOneToolset(filter_pattern='hris_*', account_id='test-account', api_key='test-key')
@@ -264,32 +266,21 @@ class TestStackOneToolset:
         # Verify tools were created
         assert isinstance(toolset, FunctionToolset)
 
-    @patch('pydantic_ai.ext.stackone.tool_from_stackone')
     @patch('pydantic_ai.ext.stackone.StackOneToolSet')
-    def test_toolset_with_list_filter_pattern(
-        self, mock_stackone_toolset_class: MagicMock, mock_tool_from_stackone: MagicMock
-    ) -> None:
+    def test_toolset_with_list_filter_pattern(self, mock_stackone_toolset_class: MagicMock) -> None:
         """Test creating a StackOneToolset with list filter_pattern."""
         from pydantic_ai.ext.stackone import StackOneToolset
 
-        # Mock the StackOneToolSet to return tool names
-        mock_tool1 = Mock()
-        mock_tool1.name = 'hris_list_employees'
-        mock_tool2 = Mock()
-        mock_tool2.name = 'ats_get_job'
+        # Mock the tools returned by fetch_tools
+        mock_tool1 = _create_mock_stackone_tool('hris_list_employees')
+        mock_tool2 = _create_mock_stackone_tool('ats_get_job')
+
+        mock_fetched_tools = Mock()
+        mock_fetched_tools.__iter__ = Mock(return_value=iter([mock_tool1, mock_tool2]))
 
         mock_stackone_toolset = Mock()
-        mock_stackone_toolset.fetch_tools.return_value = [mock_tool1, mock_tool2]
+        mock_stackone_toolset.fetch_tools.return_value = mock_fetched_tools
         mock_stackone_toolset_class.return_value = mock_stackone_toolset
-
-        # Mock tool_from_stackone to return different tools for each call
-        def mock_tool_side_effect(tool_name: str, **kwargs: object) -> Mock:
-            mock_tool = Mock(spec=Tool)
-            mock_tool.name = tool_name
-            mock_tool.max_retries = None
-            return mock_tool
-
-        mock_tool_from_stackone.side_effect = mock_tool_side_effect
 
         # Create toolset with list filter_pattern
         toolset = StackOneToolset(filter_pattern=['hris_*', 'ats_*'], account_id='test-account', api_key='test-key')
@@ -297,33 +288,23 @@ class TestStackOneToolset:
         # Verify fetch_tools was called with list filter_pattern as actions
         mock_stackone_toolset.fetch_tools.assert_called_once_with(actions=['hris_*', 'ats_*'])
 
-        # Verify tools were created for both returned tools
-        assert mock_tool_from_stackone.call_count == 2
-
         # Verify it's a FunctionToolset
         assert isinstance(toolset, FunctionToolset)
 
-    @patch('pydantic_ai.ext.stackone.tool_from_stackone')
     @patch('pydantic_ai.ext.stackone.StackOneToolSet')
-    def test_toolset_without_filter_pattern(
-        self, mock_stackone_toolset_class: MagicMock, mock_tool_from_stackone: MagicMock
-    ) -> None:
+    def test_toolset_without_filter_pattern(self, mock_stackone_toolset_class: MagicMock) -> None:
         """Test creating a StackOneToolset without filter_pattern (gets all tools)."""
         from pydantic_ai.ext.stackone import StackOneToolset
 
-        # Mock the StackOneToolSet to return all tools
-        mock_tool = Mock()
-        mock_tool.name = 'all_tools'
+        # Mock the tools returned by fetch_tools
+        mock_tool = _create_mock_stackone_tool('all_tools')
+
+        mock_fetched_tools = Mock()
+        mock_fetched_tools.__iter__ = Mock(return_value=iter([mock_tool]))
 
         mock_stackone_toolset = Mock()
-        mock_stackone_toolset.fetch_tools.return_value = [mock_tool]
+        mock_stackone_toolset.fetch_tools.return_value = mock_fetched_tools
         mock_stackone_toolset_class.return_value = mock_stackone_toolset
-
-        # Mock tool_from_stackone
-        mock_pydantic_tool = Mock(spec=Tool)
-        mock_pydantic_tool.name = 'all_tools'
-        mock_pydantic_tool.max_retries = None
-        mock_tool_from_stackone.return_value = mock_pydantic_tool
 
         # Create toolset without filter_pattern
         toolset = StackOneToolset(account_id='test-account', api_key='test-key')
@@ -334,22 +315,23 @@ class TestStackOneToolset:
         # Verify tools were created
         assert isinstance(toolset, FunctionToolset)
 
-    @patch('pydantic_ai.ext.stackone.tool_from_stackone')
     @patch('pydantic_ai.ext.stackone.StackOneToolSet')
-    def test_toolset_with_base_url(
-        self, mock_stackone_toolset_class: MagicMock, mock_tool_from_stackone: MagicMock
-    ) -> None:
+    def test_toolset_with_base_url(self, mock_stackone_toolset_class: MagicMock) -> None:
         """Test creating a StackOneToolset with custom base URL.
 
         Note: base_url is not commonly used by end users, but this test exists for coverage.
         """
         from pydantic_ai.ext.stackone import StackOneToolset
 
-        # Mock tool_from_stackone
-        mock_tool = Mock(spec=Tool)
-        mock_tool.name = 'hris_list_employees'
-        mock_tool.max_retries = None
-        mock_tool_from_stackone.return_value = mock_tool
+        # Mock the tools returned by fetch_tools
+        mock_tool = _create_mock_stackone_tool('hris_list_employees')
+
+        mock_fetched_tools = Mock()
+        mock_fetched_tools.__iter__ = Mock(return_value=iter([mock_tool]))
+
+        mock_stackone_toolset = Mock()
+        mock_stackone_toolset.fetch_tools.return_value = mock_fetched_tools
+        mock_stackone_toolset_class.return_value = mock_stackone_toolset
 
         # Create toolset with base URL
         toolset = StackOneToolset(
@@ -359,13 +341,50 @@ class TestStackOneToolset:
             base_url='https://custom.api.stackone.com',
         )
 
-        # Verify tool_from_stackone was called with base URL
-        mock_tool_from_stackone.assert_called_once_with(
-            'hris_list_employees',
-            account_id='test-account',
-            api_key='test-key',
-            base_url='https://custom.api.stackone.com',
+        # Verify StackOneToolSet was called with base URL
+        mock_stackone_toolset_class.assert_called_once_with(
+            api_key='test-key', account_id='test-account', base_url='https://custom.api.stackone.com'
         )
 
         # Verify it's a FunctionToolset
         assert isinstance(toolset, FunctionToolset)
+
+    @patch('pydantic_ai.ext.stackone.StackOneToolSet')
+    def test_toolset_with_utility_tools(self, mock_stackone_toolset_class: MagicMock) -> None:
+        """Test creating a StackOneToolset with utility tools enabled."""
+        from pydantic_ai.ext.stackone import StackOneToolset
+
+        # Mock the tools returned by fetch_tools
+        mock_tool = _create_mock_stackone_tool('hris_list_employees')
+
+        mock_fetched_tools = Mock()
+        mock_fetched_tools.__iter__ = Mock(return_value=iter([mock_tool]))
+
+        # Mock utility tools
+        mock_search_tool = _create_mock_stackone_tool('tool_search', 'Search for tools')
+        mock_execute_tool = _create_mock_stackone_tool('tool_execute', 'Execute a tool')
+
+        mock_utility_tools = Mock()
+        mock_utility_tools.get_tool.side_effect = lambda name: (
+            mock_search_tool if name == 'tool_search' else mock_execute_tool if name == 'tool_execute' else None
+        )
+
+        mock_fetched_tools.utility_tools.return_value = mock_utility_tools
+
+        mock_stackone_toolset = Mock()
+        mock_stackone_toolset.fetch_tools.return_value = mock_fetched_tools
+        mock_stackone_toolset_class.return_value = mock_stackone_toolset
+
+        # Create toolset with utility tools
+        toolset = StackOneToolset(
+            filter_pattern='hris_*',
+            include_utility_tools=True,
+            account_id='test-account',
+            api_key='test-key',
+        )
+
+        # Verify it's a FunctionToolset
+        assert isinstance(toolset, FunctionToolset)
+
+        # Verify utility_tools was called (once for search_tool, once for execute_tool)
+        assert mock_fetched_tools.utility_tools.call_count == 2

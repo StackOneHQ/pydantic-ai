@@ -91,9 +91,11 @@ def search_tool(
         A Pydantic AI tool for searching StackOne tools.
 
     Example:
-        ```python
-        from pydantic_ai.ext.stackone import StackOneToolset, search_tool
+        ```python {test="skip"}
         from stackone_ai import StackOneToolSet
+
+        from pydantic_ai import Agent
+        from pydantic_ai.ext.stackone import search_tool
 
         stackone = StackOneToolSet()
         tools = stackone.fetch_tools(actions=['stackone_*'])
@@ -127,9 +129,11 @@ def execute_tool(
         A Pydantic AI tool for executing StackOne tools.
 
     Example:
-        ```python
-        from pydantic_ai.ext.stackone import StackOneToolset, search_tool, execute_tool
+        ```python {test="skip"}
         from stackone_ai import StackOneToolSet
+
+        from pydantic_ai import Agent
+        from pydantic_ai.ext.stackone import execute_tool, search_tool
 
         stackone = StackOneToolSet()
         tools = stackone.fetch_tools(actions=['stackone_*'])
@@ -168,8 +172,9 @@ def feedback_tool(
         A Pydantic AI tool for collecting feedback.
 
     Example:
-        ```python
-        from pydantic_ai.ext.stackone import StackOneToolset, feedback_tool
+        ```python {test="skip"}
+        from pydantic_ai import Agent
+        from pydantic_ai.ext.stackone import feedback_tool
 
         agent = Agent(
             'openai:gpt-4o',
@@ -231,7 +236,7 @@ class StackOneToolset(FunctionToolset):
         id: Optional ID for the toolset.
 
     Example:
-        ```python
+        ```python {test="skip"}
         from pydantic_ai import Agent
         from pydantic_ai.ext.stackone import StackOneToolset
 
