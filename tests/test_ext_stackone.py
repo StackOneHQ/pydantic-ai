@@ -134,7 +134,9 @@ class TestToolFromStackOne:
         mock_stackone_toolset_class.return_value = mock_stackone_toolset
 
         # Create tool with base URL and verify json_schema conversion
-        tool = tool_from_stackone('bamboohr_list_employees', api_key='test-key', base_url='https://custom.api.stackone.com')
+        tool = tool_from_stackone(
+            'bamboohr_list_employees', api_key='test-key', base_url='https://custom.api.stackone.com'
+        )
         # Verify base URL was passed to StackOneToolSet
         mock_stackone_toolset_class.assert_called_once_with(
             api_key='test-key', account_id=None, base_url='https://custom.api.stackone.com'
@@ -237,7 +239,9 @@ class TestStackOneToolset:
         mock_stackone_toolset_class.assert_called_once_with(api_key='test-key', account_id='test-account')
 
         # Verify fetch_tools was called with the tool names as actions
-        mock_stackone_toolset.fetch_tools.assert_called_once_with(actions=['bamboohr_list_employees', 'bamboohr_get_employee'])
+        mock_stackone_toolset.fetch_tools.assert_called_once_with(
+            actions=['bamboohr_list_employees', 'bamboohr_get_employee']
+        )
 
     @patch('pydantic_ai.ext.stackone.StackOneToolSet')
     def test_toolset_with_filter_pattern(self, mock_stackone_toolset_class: MagicMock) -> None:
@@ -283,7 +287,9 @@ class TestStackOneToolset:
         mock_stackone_toolset_class.return_value = mock_stackone_toolset
 
         # Create toolset with list filter_pattern
-        toolset = StackOneToolset(filter_pattern=['bamboohr_*', 'workday_*'], account_id='test-account', api_key='test-key')
+        toolset = StackOneToolset(
+            filter_pattern=['bamboohr_*', 'workday_*'], account_id='test-account', api_key='test-key'
+        )
 
         # Verify fetch_tools was called with list filter_pattern as actions
         mock_stackone_toolset.fetch_tools.assert_called_once_with(actions=['bamboohr_*', 'workday_*'])

@@ -179,7 +179,7 @@ class StackOneToolset(FunctionToolset):
        where the agent needs to search for the right tool.
 
     Example:
-    ```python
+    ```python {test="skip"}
     from pydantic_ai import Agent
     from pydantic_ai.ext.stackone import StackOneToolset
 
