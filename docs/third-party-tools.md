@@ -100,6 +100,111 @@ toolset = ACIToolset(
 agent = Agent('openai:gpt-5', toolsets=[toolset])
 ```
 
+## StackOne Tools {#stackone-tools}
+
+If you'd like to use a tool from [StackOne](https://www.stackone.com/) with Pydantic AI, you can use the [`tool_from_stackone`][pydantic_ai.ext.stackone.tool_from_stackone] convenience method. StackOne provides integration infrastructure for AI agents, enabling them to execute actions across 200+ enterprise applications.
+
+You will need to install the `stackone-ai` package (requires Python 3.10+), set your StackOne API key in the `STACKONE_API_KEY` environment variable, and provide your StackOne account ID via the `STACKONE_ACCOUNT_ID` environment variable or pass it directly to the function.
+
+Here is how you can use a StackOne tool:
+
+```python {test="skip"}
+import os
+
+from pydantic_ai import Agent
+from pydantic_ai.ext.stackone import tool_from_stackone
+
+employee_tool = tool_from_stackone(
+    'bamboohr_list_employees',
+    account_id=os.getenv('STACKONE_ACCOUNT_ID'),
+    api_key=os.getenv('STACKONE_API_KEY'),
+)
+
+agent = Agent(
+    'openai:gpt-5',
+    tools=[employee_tool],
+)
+
+result = agent.run_sync('List all employees in the HR system')
+print(result.output)
+```
+
+If you'd like to use multiple StackOne tools, you can use the [`StackOneToolset`][pydantic_ai.ext.stackone.StackOneToolset] [toolset](toolsets.md#stackone-tools) which supports pattern matching for tool selection.
+
+### Dynamic Tool Discovery {#stackone-dynamic-discovery}
+
+For large tool sets where you don't know in advance which tools the agent will need, you can enable **utility tools mode** by setting `include_utility_tools=True`. This provides two special tools:
+
+- `tool_search`: Searches for relevant tools using natural language queries
+- `tool_execute`: Executes a discovered tool by name
+
+```python {test="skip"}
+import os
+
+from pydantic_ai import Agent
+from pydantic_ai.ext.stackone import StackOneToolset
+
+toolset = StackOneToolset(
+    filter_pattern='bamboohr_*',  # Load StackOne tools
+    include_utility_tools=True,  # Enable dynamic discovery
+    account_id=os.getenv('STACKONE_ACCOUNT_ID'),
+    api_key=os.getenv('STACKONE_API_KEY'),
+)
+
+agent = Agent('openai:gpt-5', toolsets=[toolset])
+result = agent.run_sync('Find a tool to list employees and use it')
+print(result.output)
+```
+
+You can also use the standalone [`search_tool`][pydantic_ai.ext.stackone.search_tool] and [`execute_tool`][pydantic_ai.ext.stackone.execute_tool] functions for more control:
+
+```python {test="skip"}
+from stackone_ai import StackOneToolSet
+
+from pydantic_ai import Agent
+from pydantic_ai.ext.stackone import execute_tool, search_tool
+
+stackone = StackOneToolSet()
+tools = stackone.fetch_tools(actions=['bamboohr_*'])
+
+agent = Agent(
+    'openai:gpt-5',
+    tools=[search_tool(tools), execute_tool(tools)],
+)
+```
+
+### Feedback Collection {#stackone-feedback}
+
+StackOne supports collecting user feedback on tool performance. Enable this by setting `include_feedback_tool=True`:
+
+```python {test="skip"}
+import os
+
+from pydantic_ai import Agent
+from pydantic_ai.ext.stackone import StackOneToolset
+
+toolset = StackOneToolset(
+    filter_pattern='bamboohr_*',
+    include_feedback_tool=True,
+    account_id=os.getenv('STACKONE_ACCOUNT_ID'),
+    api_key=os.getenv('STACKONE_API_KEY'),
+)
+
+agent = Agent('openai:gpt-5', toolsets=[toolset])
+```
+
+You can also use the standalone [`feedback_tool`][pydantic_ai.ext.stackone.feedback_tool] function:
+
+```python {test="skip"}
+from pydantic_ai import Agent
+from pydantic_ai.ext.stackone import feedback_tool
+
+agent = Agent(
+    'openai:gpt-5',
+    tools=[feedback_tool()],
+)
+```
+
 ## See Also
 
 - [Function Tools](tools.md) - Basic tool concepts and registration
@@ -107,3 +212,4 @@ agent = Agent('openai:gpt-5', toolsets=[toolset])
 - [MCP Client](mcp/client.md) - Using MCP servers with Pydantic AI
 - [LangChain Toolsets](toolsets.md#langchain-tools) - Using LangChain toolsets
 - [ACI.dev Toolsets](toolsets.md#aci-tools) - Using ACI.dev toolsets
+- [StackOne Toolsets](toolsets.md#stackone-tools) - Using StackOne toolsets

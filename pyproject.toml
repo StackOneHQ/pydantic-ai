@@ -266,7 +266,9 @@ include = [
 ]
 omit = [
     "tests/example_modules/*.py",
+    "tests/test_ext_stackone.py",  # stackone tests are mocked, not real coverage
     "pydantic_ai_slim/pydantic_ai/ext/aci.py",  # aci-sdk is too niche to be added as an (optional) dependency
+    "pydantic_ai_slim/pydantic_ai/ext/stackone.py",  # stackone-ai integration with external API calls
     "pydantic_ai_slim/pydantic_ai/common_tools/exa.py",  # exa-py integration with external API calls
     # TODO(Marcelo): Enable prefect coverage again.
     "pydantic_ai_slim/pydantic_ai/durable_exec/prefect/*.py",

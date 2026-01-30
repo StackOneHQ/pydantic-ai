@@ -733,3 +733,36 @@ toolset = ACIToolset(
 
 agent = Agent('openai:gpt-5', toolsets=[toolset])
 ```
+
+### StackOne Tools {#stackone-tools}
+
+If you'd like to use tools from [StackOne](https://www.stackone.com/) with Pydantic AI, you can use the [`StackOneToolset`][pydantic_ai.ext.stackone.StackOneToolset] which supports pattern matching for tool selection. StackOne provides integration infrastructure for AI agents, enabling them to execute actions across 200+ enterprise applications.
+
+You will need to install the `stackone-ai` package (requires Python 3.10+), set your StackOne API key in the `STACKONE_API_KEY` environment variable, and provide your StackOne account ID via the `STACKONE_ACCOUNT_ID` environment variable or pass it directly to the toolset.
+
+```python {test="skip"}
+import os
+
+from pydantic_ai import Agent
+from pydantic_ai.ext.stackone import StackOneToolset
+
+# Use filter patterns to select specific tools
+toolset = StackOneToolset(
+    filter_pattern='bamboohr_*',  # Include all StackOne tools
+    account_id=os.getenv('STACKONE_ACCOUNT_ID'),
+    api_key=os.getenv('STACKONE_API_KEY'),
+)
+
+# Or specify exact tools
+specific_toolset = StackOneToolset(
+    tools=['bamboohr_list_employees', 'bamboohr_get_employee'],  # Specific tools only
+    account_id=os.getenv('STACKONE_ACCOUNT_ID'),
+    api_key=os.getenv('STACKONE_API_KEY'),
+)
+
+agent = Agent('openai:gpt-5', toolsets=[toolset])
+
+# Example usage
+result = agent.run_sync('List all employees and get information about the first employee')
+print(result.output)
+```
