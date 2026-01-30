@@ -365,7 +365,7 @@ class TestStackOneToolset:
         mock_execute_tool = _create_mock_stackone_tool('tool_execute', 'Execute a tool')
 
         mock_utility_tools = Mock()
-        mock_utility_tools.get_tool.side_effect = lambda name: (
+        mock_utility_tools.get_tool.side_effect = lambda name: (  # pyright: ignore[reportUnknownLambdaType]
             mock_search_tool if name == 'tool_search' else mock_execute_tool if name == 'tool_execute' else None
         )
 

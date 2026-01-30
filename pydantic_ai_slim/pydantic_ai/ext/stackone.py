@@ -89,22 +89,6 @@ def search_tool(
 
     Returns:
         A Pydantic AI tool for searching StackOne tools.
-
-    Example:
-        ```python {test="skip"}
-        from stackone_ai import StackOneToolSet
-
-        from pydantic_ai import Agent
-        from pydantic_ai.ext.stackone import search_tool
-
-        stackone = StackOneToolSet()
-        tools = stackone.fetch_tools(actions=['stackone_*'])
-
-        agent = Agent(
-            'openai:gpt-4o',
-            tools=[search_tool(tools)],
-        )
-        ```
     """
     utility_tools = tools.utility_tools(hybrid_alpha=hybrid_alpha)
     search = utility_tools.get_tool('tool_search')
@@ -127,22 +111,6 @@ def execute_tool(
 
     Returns:
         A Pydantic AI tool for executing StackOne tools.
-
-    Example:
-        ```python {test="skip"}
-        from stackone_ai import StackOneToolSet
-
-        from pydantic_ai import Agent
-        from pydantic_ai.ext.stackone import execute_tool, search_tool
-
-        stackone = StackOneToolSet()
-        tools = stackone.fetch_tools(actions=['stackone_*'])
-
-        agent = Agent(
-            'openai:gpt-4o',
-            tools=[search_tool(tools), execute_tool(tools)],
-        )
-        ```
     """
     utility_tools = tools.utility_tools()
     execute = utility_tools.get_tool('tool_execute')
@@ -170,17 +138,6 @@ def feedback_tool(
 
     Returns:
         A Pydantic AI tool for collecting feedback.
-
-    Example:
-        ```python {test="skip"}
-        from pydantic_ai import Agent
-        from pydantic_ai.ext.stackone import feedback_tool
-
-        agent = Agent(
-            'openai:gpt-4o',
-            tools=[feedback_tool()],
-        )
-        ```
     """
     try:
         from stackone_ai.feedback.tool import create_feedback_tool
@@ -221,41 +178,14 @@ class StackOneToolset(FunctionToolset):
        dynamically discover and execute tools. This is better for large tool sets
        where the agent needs to search for the right tool.
 
-    Args:
-        tools: Specific tool names to include (e.g., ["stackone_list_employees"]).
-        account_id: The StackOne account ID. Uses STACKONE_ACCOUNT_ID env var if not provided.
-        api_key: The StackOne API key. Uses STACKONE_API_KEY env var if not provided.
-        base_url: Custom base URL for StackOne API.
-        filter_pattern: Glob pattern(s) to filter tools (e.g., "stackone_*").
-        include_utility_tools: If True, includes search and execute utility tools instead of
-            individual tools. Default is False.
-        include_feedback_tool: If True, includes the feedback collection tool.
-            Default is False.
-        hybrid_alpha: Weight for BM25 in hybrid search (0-1) when using utility tools.
-            Default is 0.2.
-        id: Optional ID for the toolset.
-
     Example:
-        ```python {test="skip"}
-        from pydantic_ai import Agent
-        from pydantic_ai.ext.stackone import StackOneToolset
+    ```python
+    from pydantic_ai import Agent
+    from pydantic_ai.ext.stackone import StackOneToolset
 
-        # Direct mode - expose specific tools
-        agent = Agent(
-            'openai:gpt-4o',
-            toolsets=[StackOneToolset(filter_pattern='stackone_*')],
-        )
-
-        # Utility tools mode - dynamic discovery
-        agent = Agent(
-            'openai:gpt-4o',
-            toolsets=[StackOneToolset(
-                filter_pattern='stackone_*',
-                include_utility_tools=True,
-                include_feedback_tool=True,
-            )],
-        )
-        ```
+    toolset = StackOneToolset(api_key='your-api-key')
+    agent = Agent('openai:gpt-4o', toolsets=[toolset])
+    ```
     """
 
     def __init__(
@@ -271,6 +201,22 @@ class StackOneToolset(FunctionToolset):
         hybrid_alpha: float | None = None,
         id: str | None = None,
     ):
+        """Creates a StackOne toolset.
+
+        Args:
+            tools: Specific tool names to include (e.g., ["stackone_list_employees"]).
+            account_id: The StackOne account ID. Uses STACKONE_ACCOUNT_ID env var if not provided.
+            api_key: The StackOne API key. Uses STACKONE_API_KEY env var if not provided.
+            base_url: Custom base URL for StackOne API.
+            filter_pattern: Glob pattern(s) to filter tools (e.g., "stackone_*").
+            include_utility_tools: If True, includes search and execute utility tools instead of
+                individual tools. Default is False.
+            include_feedback_tool: If True, includes the feedback collection tool.
+                Default is False.
+            hybrid_alpha: Weight for BM25 in hybrid search (0-1) when using utility tools.
+                Default is 0.2.
+            id: Optional ID for the toolset, used for durable execution environments.
+        """
         stackone_toolset = StackOneToolSet(
             api_key=api_key,
             account_id=account_id,
