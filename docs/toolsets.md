@@ -748,14 +748,14 @@ from pydantic_ai.ext.stackone import StackOneToolset
 
 # Use filter patterns to select specific tools
 toolset = StackOneToolset(
-    filter_pattern='stackone_*',  # Include all StackOne tools
+    filter_pattern='bamboohr_*',  # Include all StackOne tools
     account_id=os.getenv('STACKONE_ACCOUNT_ID'),
     api_key=os.getenv('STACKONE_API_KEY'),
 )
 
 # Or specify exact tools
 specific_toolset = StackOneToolset(
-    tools=['stackone_list_employees', 'stackone_get_employee'],  # Specific tools only
+    tools=['bamboohr_list_employees', 'bamboohr_get_employee'],  # Specific tools only
     account_id=os.getenv('STACKONE_ACCOUNT_ID'),
     api_key=os.getenv('STACKONE_API_KEY'),
 )

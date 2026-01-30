@@ -50,7 +50,7 @@ def tool_from_stackone(
     """Creates a Pydantic AI tool proxy from a StackOne tool.
 
     Args:
-        tool_name: The name of the StackOne tool to wrap (e.g., "stackone_list_employees").
+        tool_name: The name of the StackOne tool to wrap (e.g., "bamboohr_list_employees").
         account_id: The StackOne account ID. If not provided, uses STACKONE_ACCOUNT_ID env var.
         api_key: The StackOne API key. If not provided, uses STACKONE_API_KEY env var.
         base_url: Custom base URL for StackOne API. Optional.
@@ -204,11 +204,11 @@ class StackOneToolset(FunctionToolset):
         """Creates a StackOne toolset.
 
         Args:
-            tools: Specific tool names to include (e.g., ["stackone_list_employees"]).
+            tools: Specific tool names to include (e.g., ["bamboohr_list_employees"]).
             account_id: The StackOne account ID. Uses STACKONE_ACCOUNT_ID env var if not provided.
             api_key: The StackOne API key. Uses STACKONE_API_KEY env var if not provided.
             base_url: Custom base URL for StackOne API.
-            filter_pattern: Glob pattern(s) to filter tools (e.g., "stackone_*").
+            filter_pattern: Glob pattern(s) to filter tools (e.g., "bamboohr_*").
             include_utility_tools: If True, includes search and execute utility tools instead of
                 individual tools. Default is False.
             include_feedback_tool: If True, includes the feedback collection tool.

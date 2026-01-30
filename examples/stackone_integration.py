@@ -15,7 +15,7 @@ from pydantic_ai.ext.stackone import (
 def single_tool_example():
     """Example using a single StackOne tool."""
     employee_tool = tool_from_stackone(
-        'stackone_list_employees',
+        'bamboohr_list_employees',
         account_id=os.getenv('STACKONE_ACCOUNT_ID'),
         api_key=os.getenv('STACKONE_API_KEY'),
     )
@@ -28,7 +28,7 @@ def single_tool_example():
 def toolset_with_filter_example():
     """Example using StackOne toolset with filter pattern."""
     toolset = StackOneToolset(
-        filter_pattern='stackone_*',  # Get all StackOne tools
+        filter_pattern='bamboohr_*',  # Get all StackOne tools
         account_id=os.getenv('STACKONE_ACCOUNT_ID'),
         api_key=os.getenv('STACKONE_API_KEY'),
     )
@@ -42,8 +42,8 @@ def toolset_with_specific_tools_example():
     """Example using StackOne toolset with specific tools."""
     toolset = StackOneToolset(
         tools=[
-            'stackone_list_employees',
-            'stackone_get_employee',
+            'bamboohr_list_employees',
+            'bamboohr_get_employee',
         ],  # Specific tools only
         account_id=os.getenv('STACKONE_ACCOUNT_ID'),
         api_key=os.getenv('STACKONE_API_KEY'),
@@ -65,7 +65,7 @@ def utility_tools_example():
     to dynamically discover and use the right ones.
     """
     toolset = StackOneToolset(
-        filter_pattern='stackone_*',  # Load all StackOne tools
+        filter_pattern='bamboohr_*',  # Load all StackOne tools
         include_utility_tools=True,  # Enable dynamic discovery
         account_id=os.getenv('STACKONE_ACCOUNT_ID'),
         api_key=os.getenv('STACKONE_API_KEY'),
@@ -85,7 +85,7 @@ def standalone_utility_tools_example():
 
     # Fetch tools from StackOne
     stackone = StackOneToolSet()
-    tools = stackone.fetch_tools(actions=['stackone_*'])
+    tools = stackone.fetch_tools(actions=['bamboohr_*'])
 
     # Create search and execute tools
     agent = Agent(
@@ -104,7 +104,7 @@ def feedback_example():
     with StackOne tools, which helps improve the tool ecosystem.
     """
     toolset = StackOneToolset(
-        filter_pattern='stackone_*',
+        filter_pattern='bamboohr_*',
         include_feedback_tool=True,
         account_id=os.getenv('STACKONE_ACCOUNT_ID'),
         api_key=os.getenv('STACKONE_API_KEY'),
@@ -139,7 +139,7 @@ def full_featured_example():
     - Custom hybrid_alpha for search tuning
     """
     toolset = StackOneToolset(
-        filter_pattern=['stackone_*'],  # Filter pattern
+        filter_pattern=['bamboohr_*'],  # Filter pattern
         include_utility_tools=True,
         include_feedback_tool=True,
         hybrid_alpha=0.3,  # Custom search tuning

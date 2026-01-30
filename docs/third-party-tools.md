@@ -115,7 +115,7 @@ from pydantic_ai import Agent
 from pydantic_ai.ext.stackone import tool_from_stackone
 
 employee_tool = tool_from_stackone(
-    'stackone_list_employees',
+    'bamboohr_list_employees',
     account_id=os.getenv('STACKONE_ACCOUNT_ID'),
     api_key=os.getenv('STACKONE_API_KEY'),
 )
@@ -145,7 +145,7 @@ from pydantic_ai import Agent
 from pydantic_ai.ext.stackone import StackOneToolset
 
 toolset = StackOneToolset(
-    filter_pattern='stackone_*',  # Load StackOne tools
+    filter_pattern='bamboohr_*',  # Load StackOne tools
     include_utility_tools=True,  # Enable dynamic discovery
     account_id=os.getenv('STACKONE_ACCOUNT_ID'),
     api_key=os.getenv('STACKONE_API_KEY'),
@@ -165,7 +165,7 @@ from pydantic_ai import Agent
 from pydantic_ai.ext.stackone import execute_tool, search_tool
 
 stackone = StackOneToolSet()
-tools = stackone.fetch_tools(actions=['stackone_*'])
+tools = stackone.fetch_tools(actions=['bamboohr_*'])
 
 agent = Agent(
     'openai:gpt-5',
@@ -184,7 +184,7 @@ from pydantic_ai import Agent
 from pydantic_ai.ext.stackone import StackOneToolset
 
 toolset = StackOneToolset(
-    filter_pattern='stackone_*',
+    filter_pattern='bamboohr_*',
     include_feedback_tool=True,
     account_id=os.getenv('STACKONE_ACCOUNT_ID'),
     api_key=os.getenv('STACKONE_API_KEY'),

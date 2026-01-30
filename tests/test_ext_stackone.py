@@ -48,13 +48,13 @@ class TestToolFromStackOne:
 
         # Mock the StackOne tool
         mock_tool = Mock()
-        mock_tool.name = 'hris_list_employees'
+        mock_tool.name = 'bamboohr_list_employees'
         mock_tool.description = 'List all employees'
         mock_tool.execute.return_value = {'employees': []}
         mock_tool.to_openai_function.return_value = {
             'type': 'function',
             'function': {
-                'name': 'hris_list_employees',
+                'name': 'bamboohr_list_employees',
                 'description': 'List all employees',
                 'parameters': {
                     'type': 'object',
@@ -71,19 +71,19 @@ class TestToolFromStackOne:
         mock_stackone_toolset_class.return_value = mock_stackone_toolset
 
         # Create the tool
-        tool = tool_from_stackone('hris_list_employees', account_id='test-account', api_key='test-key')
+        tool = tool_from_stackone('bamboohr_list_employees', account_id='test-account', api_key='test-key')
 
         # Verify tool creation
         assert isinstance(tool, Tool)
-        assert tool.name == 'hris_list_employees'
+        assert tool.name == 'bamboohr_list_employees'
         assert tool.description == 'List all employees'
 
         # Verify StackOneToolSet was called with correct parameters
         mock_stackone_toolset_class.assert_called_once_with(api_key='test-key', account_id='test-account')
 
         # Verify fetch_tools was called with actions parameter
-        mock_stackone_toolset.fetch_tools.assert_called_once_with(actions=['hris_list_employees'])
-        mock_tools.get_tool.assert_called_once_with('hris_list_employees')
+        mock_stackone_toolset.fetch_tools.assert_called_once_with(actions=['bamboohr_list_employees'])
+        mock_tools.get_tool.assert_called_once_with('bamboohr_list_employees')
         # Verify returned Tool has correct JSON schema based on StackOne definition
         expected = mock_tool.to_openai_function()['function']['parameters']
         assert tool.function_schema.json_schema == expected
@@ -115,12 +115,12 @@ class TestToolFromStackOne:
 
         # Mock the StackOne tool
         mock_tool = Mock()
-        mock_tool.name = 'hris_list_employees'
+        mock_tool.name = 'bamboohr_list_employees'
         mock_tool.description = 'List all employees'
         mock_tool.to_openai_function.return_value = {
             'type': 'function',
             'function': {
-                'name': 'hris_list_employees',
+                'name': 'bamboohr_list_employees',
                 'description': 'List all employees',
                 'parameters': {'type': 'object', 'properties': {}},
             },
@@ -134,7 +134,7 @@ class TestToolFromStackOne:
         mock_stackone_toolset_class.return_value = mock_stackone_toolset
 
         # Create tool with base URL and verify json_schema conversion
-        tool = tool_from_stackone('hris_list_employees', api_key='test-key', base_url='https://custom.api.stackone.com')
+        tool = tool_from_stackone('bamboohr_list_employees', api_key='test-key', base_url='https://custom.api.stackone.com')
         # Verify base URL was passed to StackOneToolSet
         mock_stackone_toolset_class.assert_called_once_with(
             api_key='test-key', account_id=None, base_url='https://custom.api.stackone.com'
@@ -215,8 +215,8 @@ class TestStackOneToolset:
         from pydantic_ai.ext.stackone import StackOneToolset
 
         # Mock the tools returned by fetch_tools
-        mock_tool1 = _create_mock_stackone_tool('hris_list_employees')
-        mock_tool2 = _create_mock_stackone_tool('hris_get_employee')
+        mock_tool1 = _create_mock_stackone_tool('bamboohr_list_employees')
+        mock_tool2 = _create_mock_stackone_tool('bamboohr_get_employee')
 
         mock_fetched_tools = Mock()
         mock_fetched_tools.__iter__ = Mock(return_value=iter([mock_tool1, mock_tool2]))
@@ -227,7 +227,7 @@ class TestStackOneToolset:
 
         # Create the toolset with specific tools
         toolset = StackOneToolset(
-            tools=['hris_list_employees', 'hris_get_employee'], account_id='test-account', api_key='test-key'
+            tools=['bamboohr_list_employees', 'bamboohr_get_employee'], account_id='test-account', api_key='test-key'
         )
 
         # Verify it's a FunctionToolset
@@ -237,7 +237,7 @@ class TestStackOneToolset:
         mock_stackone_toolset_class.assert_called_once_with(api_key='test-key', account_id='test-account')
 
         # Verify fetch_tools was called with the tool names as actions
-        mock_stackone_toolset.fetch_tools.assert_called_once_with(actions=['hris_list_employees', 'hris_get_employee'])
+        mock_stackone_toolset.fetch_tools.assert_called_once_with(actions=['bamboohr_list_employees', 'bamboohr_get_employee'])
 
     @patch('pydantic_ai.ext.stackone.StackOneToolSet')
     def test_toolset_with_filter_pattern(self, mock_stackone_toolset_class: MagicMock) -> None:
@@ -245,7 +245,7 @@ class TestStackOneToolset:
         from pydantic_ai.ext.stackone import StackOneToolset
 
         # Mock the tools returned by fetch_tools
-        mock_tool = _create_mock_stackone_tool('hris_list_employees')
+        mock_tool = _create_mock_stackone_tool('bamboohr_list_employees')
 
         mock_fetched_tools = Mock()
         mock_fetched_tools.__iter__ = Mock(return_value=iter([mock_tool]))
@@ -255,13 +255,13 @@ class TestStackOneToolset:
         mock_stackone_toolset_class.return_value = mock_stackone_toolset
 
         # Create toolset with filter_pattern
-        toolset = StackOneToolset(filter_pattern='hris_*', account_id='test-account', api_key='test-key')
+        toolset = StackOneToolset(filter_pattern='bamboohr_*', account_id='test-account', api_key='test-key')
 
         # Verify StackOneToolSet was created correctly
         mock_stackone_toolset_class.assert_called_once_with(api_key='test-key', account_id='test-account')
 
         # Verify fetch_tools was called with actions parameter (list)
-        mock_stackone_toolset.fetch_tools.assert_called_once_with(actions=['hris_*'])
+        mock_stackone_toolset.fetch_tools.assert_called_once_with(actions=['bamboohr_*'])
 
         # Verify tools were created
         assert isinstance(toolset, FunctionToolset)
@@ -272,8 +272,8 @@ class TestStackOneToolset:
         from pydantic_ai.ext.stackone import StackOneToolset
 
         # Mock the tools returned by fetch_tools
-        mock_tool1 = _create_mock_stackone_tool('hris_list_employees')
-        mock_tool2 = _create_mock_stackone_tool('ats_get_job')
+        mock_tool1 = _create_mock_stackone_tool('bamboohr_list_employees')
+        mock_tool2 = _create_mock_stackone_tool('workday_list_employees')
 
         mock_fetched_tools = Mock()
         mock_fetched_tools.__iter__ = Mock(return_value=iter([mock_tool1, mock_tool2]))
@@ -283,10 +283,10 @@ class TestStackOneToolset:
         mock_stackone_toolset_class.return_value = mock_stackone_toolset
 
         # Create toolset with list filter_pattern
-        toolset = StackOneToolset(filter_pattern=['hris_*', 'ats_*'], account_id='test-account', api_key='test-key')
+        toolset = StackOneToolset(filter_pattern=['bamboohr_*', 'workday_*'], account_id='test-account', api_key='test-key')
 
         # Verify fetch_tools was called with list filter_pattern as actions
-        mock_stackone_toolset.fetch_tools.assert_called_once_with(actions=['hris_*', 'ats_*'])
+        mock_stackone_toolset.fetch_tools.assert_called_once_with(actions=['bamboohr_*', 'workday_*'])
 
         # Verify it's a FunctionToolset
         assert isinstance(toolset, FunctionToolset)
@@ -324,7 +324,7 @@ class TestStackOneToolset:
         from pydantic_ai.ext.stackone import StackOneToolset
 
         # Mock the tools returned by fetch_tools
-        mock_tool = _create_mock_stackone_tool('hris_list_employees')
+        mock_tool = _create_mock_stackone_tool('bamboohr_list_employees')
 
         mock_fetched_tools = Mock()
         mock_fetched_tools.__iter__ = Mock(return_value=iter([mock_tool]))
@@ -335,7 +335,7 @@ class TestStackOneToolset:
 
         # Create toolset with base URL
         toolset = StackOneToolset(
-            tools=['hris_list_employees'],
+            tools=['bamboohr_list_employees'],
             account_id='test-account',
             api_key='test-key',
             base_url='https://custom.api.stackone.com',
@@ -355,7 +355,7 @@ class TestStackOneToolset:
         from pydantic_ai.ext.stackone import StackOneToolset
 
         # Mock the tools returned by fetch_tools
-        mock_tool = _create_mock_stackone_tool('hris_list_employees')
+        mock_tool = _create_mock_stackone_tool('bamboohr_list_employees')
 
         mock_fetched_tools = Mock()
         mock_fetched_tools.__iter__ = Mock(return_value=iter([mock_tool]))
@@ -377,7 +377,7 @@ class TestStackOneToolset:
 
         # Create toolset with utility tools
         toolset = StackOneToolset(
-            filter_pattern='hris_*',
+            filter_pattern='bamboohr_*',
             include_utility_tools=True,
             account_id='test-account',
             api_key='test-key',
